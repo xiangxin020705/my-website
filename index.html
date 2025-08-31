@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>同仁双宝｜男性机能自测报告（移动端H5·单文件）</title>
+<meta name="theme-color" content="#0a0f1d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{
+    --bg:#080b16;--card:#0f1426;--muted:#9aa7b5;--text:#e6edf3;--accent:#3dd6d0;--accent-2:#8a5cff;--gold:#f1c961;
+    --success:#37d67a;--warn:#ffce3a;--danger:#ff6b6b;
+    --radius:16px;
+    --shadow: 0 10px 28px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.04);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;background:radial-gradient(1000px 700px at 80% -10%, #12213f 0%, #0b1226 40%, #080b16 70%, #070910 100%);
+    color:var(--text);
+    font: 15px/1.7 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    overflow-x:hidden;
+    padding-top:calc(var(--safe-top) + 6px);
+  }
+  /* 手机优先字号 */
+  h1{font-size:clamp(22px,5.6vw,36px);margin:.3em 0 .1em;line-height:1.2;font-weight:800}
+  h2{font-size:clamp(18px,4.6vw,24px);margin:1.1em 0 .6em}
+  h3{font-size:clamp(16px,4.2vw,20px);margin:.8em 0 .4em}
+  p,li{font-size:clamp(14px,3.8vw,16px)}
+  small{color:var(--muted)}
+  /* 粒子背景（自动降级） */
+  canvas#bg{position:fixed;inset:0;z-index:0;filter:contrast(110%) saturate(110%);pointer-events:none}
+  /* 页头 */
+  .hero{position:relative;z-index:1;padding:18px 14px 6px;max-width:980px;margin:0 auto}
+  .brand{display:flex;gap:8px;align-items:center;color:#c7d2fe;letter-spacing:.12em;text-transform:uppercase;font-weight:700;font-size:12px;opacity:.9}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:conic-gradient(from 0deg,#3dd6d0,#8a5cff,#f1c961,#3dd6d0)}
+  .subtitle{color:var(--muted);margin-top:6px}
+  /* 卡片 单列流 */
+  .stack{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)),var(--card);
+    border-radius:var(--radius);padding:14px;border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow);isolation:isolate
+  }
+  .card::before{
+    content:"";position:absolute;inset:-1px;border-radius:var(--radius);
+    padding:1px;background:linear-gradient(60deg,rgba(61,214,208,.28),rgba(138,92,255,.2),rgba(241,201,97,.2));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.75;pointer-events:none
+  }
+  .kv{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .kv .chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:6px 10px;border-radius:999px;font-size:12px}
+  /* 进度条 */
+  .progress{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;margin:8px 0}
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+  .tag.good{color:#7af7b2;border-color:rgba(55,214,122,.35)}
+  .tag.mid{color:#ffd36b;border-color:rgba(255,211,107,.35)}
+  .tag.bad{color:#ff9b9b;border-color:rgba(255,155,155,.35)}
+  .bar{height:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));position:relative;overflow:hidden}
+  .bar>i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(var(--v,.4));
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 18px rgba(61,214,208,.45)}
+  /* 雷达图（移动端尺寸） */
+  .radar{height:260px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);margin-top:10px}
+  /* 折叠子卡（触控友好） */
+  .pane{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;background:rgba(255,255,255,.03);margin:8px 0}
+  /* 粘底大按钮（安全区适配） */
+  .cta{position:sticky;bottom:0;z-index:3;padding:10px 12px calc(12px + var(--safe-bottom));background:linear-gradient(180deg,transparent,rgba(8,11,22,.85))}
+  .btn{
+    width:100%;display:inline-flex;justify-content:center;align-items:center;gap:10px;padding:14px 16px;border-radius:14px;
+    color:#081018;background:linear-gradient(90deg,#3dd6d0,#8a5cff);border:1px solid rgba(255,255,255,.2);
+    box-shadow:0 10px 26px rgba(61,214,208,.45);font-weight:800;font-size:16px;letter-spacing:.02em
+  }
+  .btn:active{transform:translateY(1px)}
+  /* 顶部工具（移动全屏编辑） */
+  .tools{position:fixed;top:6px;right:8px;z-index:9;display:flex;gap:8px}
+  .tools button{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:8px 10px;border-radius:10px;font-size:12px}
+  .panel{
+    position:fixed;inset:0;z-index:10;display:none;background:rgba(8,11,22,.98);padding:calc(10px + var(--safe-top)) 12px calc(12px + var(--safe-bottom));
+  }
+  .panel h3{margin:.2em 0 .6em}
+  .panel textarea{width:100%;height:48vh;background:#0c1224;color:#e6edf3;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .panel .row{display:flex;gap:8px;margin-top:10px}
+  .panel .row button{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff}
+  .disclaimer{color:#94a3b8;font-size:12px;margin-top:8px}
+  /* 轻量入场动效（减少移动负担） */
+  .reveal{opacity:0;transform:translateY(10px);animation:rise .6s .05s both}
+  @keyframes rise{to{opacity:1;transform:none}}
+  /* 降级：用户偏好减少动效 */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+    canvas#bg{display:none}
+  }
+  /* 横屏/平板增强 */
+  @media (min-width:768px){
+    body{font-size:16px}
+    .hero{padding:24px 20px 8px}
+    .stack{gap:16px}
+    .radar{height:300px}
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div class="tools">
+  <button id="editBtn">🛠️ 编辑数据</button>
+  <button onclick="window.print()">🖨️ 打印/导出PDF</button>
+</div>
+
+<div class="panel" id="editor">
+  <h3>编辑客户数据（保存后实时重算）</h3>
+  <textarea id="jsonArea"></textarea>
+  <div class="row">
+    <button onclick="applyJSON()">保存✔</button>
+    <button onclick="demoFill()">填入示例</button>
+    <button onclick="editor.style.display='none'">关闭</button>
+  </div>
+  <div class="disclaimer">提示：页面仅作健康管理与生活方式参考，不替代医疗诊断；如有不适请及时就医。</div>
+</div>
+
+<section class="hero">
+  <div class="brand"><span class="dot"></span> GUOYAOTEYI · TONGREN DOUBLE TREASURE</div>
+  <h1 class="reveal">男性机能自测分析报告</h1>
+  <p class="subtitle reveal">基于 P·P·A·S（专业学习 · 个性训练 · 权威食养 · 私域陪跑）的合规评估与行动指引。</p>
+
+  <div class="stack">
+    <!-- 概况+评分 -->
+    <div class="card reveal" id="report">
+      <h3>一、客户概况 & 关键结论</h3>
+      <div class="kv" id="chips"></div>
+
+      <div class="progress"><div class="tag mid">能量基础</div><div class="bar"><i id="p_energy"></i></div></div>
+      <div class="progress"><div class="tag mid">稳定维持</div><div class="bar"><i id="p_stability"></i></div></div>
+      <div class="progress"><div class="tag mid">控制能力</div><div class="bar"><i id="p_control"></i></div></div>
+      <div class="progress"><div class="tag mid">恢复速度</div><div class="bar"><i id="p_recovery"></i></div></div>
+
+      <div class="radar"><canvas id="radar"></canvas></div>
+
+      <h3>二、专业解读（偏诊断口吻）</h3>
+      <div id="insights"></div>
+
+      <h3>三、风险与边界</h3>
+      <ul class="muted" id="risks">
+        <li>当前状态属于<strong>亚健康的功能失衡</strong>，不等同于疾病诊断。</li>
+        <li>报告基于客户自述问卷，会受信息充分性与当下状态波动影响。</li>
+        <li>严禁“治疗/保证”等承诺；我们强调<strong>科学方法+安全合规+持续陪跑</strong>。</li>
+      </ul>
+    </div>
+
+    <!-- 行动引导 -->
+    <div class="card reveal" id="sales">
+      <h3>四、行动方案 & 合规销售话术</h3>
+      <div class="pane" id="script_main"></div>
+
+      <h3>五、阶段化路径（90天示例）</h3>
+      <div class="pane" id="ph1"></div>
+      <div class="pane" id="ph2"></div>
+      <div class="pane" id="ph3"></div>
+      <div class="pane" id="bundle"></div>
+
+      <h3>六、合规表达提示</h3>
+      <small>用“支持/优化/帮助提升体验/机会/环境”替代“治疗/治愈/保证”；重点承诺：<b>科学方法 + 安全合规 + 陪跑服务</b>，不承诺具体时长与数值。</small>
+    </div>
+  </div>
+</section>
+
+<!-- 粘底CTA：大拇指可点 -->
+<div class="cta">
+  <button class="btn" id="startBtn">立即启动「能量与控制力唤醒方案」</button>
+</div>
+
+<script>
+/* ======================
+   1) 移动端数据（可编辑）
+   ====================== */
+let data = {
+  client: {
+    name: "张先生",
+    age: 38,
+    occupation: "互联网中层管理",
+    answers: {
+      erectionHardness: "插入或不够坚硬",
+      maintainAbility: "偶尔可以",
+      timeToEjac: "1分钟以内",
+      fatigue: "经常",
+      libidoChange: "几乎没有",
+      performanceChange: "几乎没有",
+      anxiety: "从不或很少",
+      interestInSex: "几乎没有",
+      thinkNormalAging: "比较认同",
+      lifestylePoor: "偶尔",
+      relationshipImpact: "没有影响"
+    }
+  }
+};
+
+/* ======================
+   2) 评分
+   ====================== */
+function computeScores(a){
+  const clamp = v=>Math.max(.08, Math.min(.95, v));
+  let energy = 0.52 + (a.fatigue==="经常"?-0.25: a.fatigue==="偶尔"?-0.08:0) + (a.lifestylePoor==="经常"?-0.18: a.lifestylePoor==="偶尔"?-0.06:0);
+  let stability = 0.56 + (a.maintainAbility==="偶尔可以"?-0.18: a.maintainAbility==="经常可以"?-0.06:0) + (a.erectionHardness.includes("不够坚硬")?-0.18:0);
+  let control = 0.50 + (a.timeToEjac.includes("1分钟")?-0.25: a.timeToEjac.includes("3")?-0.08:0) + (a.anxiety==="经常"?-0.08:0);
+  let recovery = 0.56 + (a.fatigue==="经常"?-0.12:0) + (a.lifestylePoor==="偶尔"?-0.04: a.lifestylePoor==="经常"?-0.1:0);
+  return {energy:clamp(energy), stability:clamp(stability), control:clamp(control), recovery:clamp(recovery)};
+}
+function qualitative(v){
+  if(v>=0.75) return {label:"良好", cls:"good"};
+  if(v>=0.45) return {label:"中等", cls:"mid"};
+  return {label:"待优化", cls:"bad"};
+}
+
+/* ======================
+   3) 渲染
+   ====================== */
+function render(){
+  const a = data.client.answers;
+  const s = computeScores(a);
+
+  // 顶部chips
+  document.getElementById('chips').innerHTML = [
+    `客户：${data.client.name}`,`年龄：${data.client.age}`,
+    `职业：${data.client.occupation||"—"}`,`时间：${new Date().toLocaleDateString()}`
+  ].map(t=>`<span class="chip">${t}</span>`).join("");
+
+  // 进度条
+  const setBar = (id,val,label)=>{
+    const el = document.getElementById(id);
+    el.style.setProperty('--v', val);
+    const q = qualitative(val);
+    const tag = el.parentElement.previousElementSibling;
+    tag.className = `tag ${q.cls}`;
+    tag.textContent = `${tag.textContent.split(' ')[0]} · ${q.label}`;
+  };
+  setBar('p_energy', s.energy);
+  setBar('p_stability', s.stability);
+  setBar('p_control', s.control);
+  setBar('p_recovery', s.recovery);
+
+  // 解读
+  const insights = [
+    {t:"能量基础 · 待巩固", b:`白天易疲劳、兴趣偏低 → <b>能量库</b>供给不足；建议先做睡眠与补水节律，辅以“内服双引擎”（黄精淫羊藿/玛咖西洋参）作日常活力的<small>支持</small>。`},
+    {t:"状态稳定 · 易波动", b:`“偶尔可维持”+主观硬度偏弱 → 压力/疲惫时下滑明显；加入核心肌群与呼吸节律训练，提升稳态。`},
+    {t:"控制能力 · 需训练", b:`“1分钟以内”提示节奏控制尚未建立；采用<b>分段式节律控制</b>，初期可配“控时喷剂”作为从容感“副刹车”。`},
+    {t:"恢复速度 · 中等偏弱", b:`偶发熬夜/久坐+经常疲劳 → 修复曲线偏平；加入拉伸放松，并以修复按摩膏/博金油进行“硬件+通路”的<small>养护</small>。`}
+  ];
+  document.getElementById('insights').innerHTML = insights.map(x=>`
+    <div class="pane">
+      <div class="tag mid" style="margin-bottom:6px">${x.t}</div>
+      <div>${x.b}</div>
+    </div>`).join("");
+
+  // 话术
+  document.getElementById('script_main').innerHTML = `
+    <p>哥，从您的自测情况看，主要是<b>能量不足 + 稳定与控制偏弱</b>，这在忙碌阶段很常见。</p>
+    <p>我们的思路不是某一瓶产品“立竿见影”，而是<span class="tag">课程训练</span> + <span class="tag">日常食养</span> + <span class="tag">外用养护</span> + <span class="tag">陪跑服务</span>四位一体，<b>一步步</b>把能量与节奏建立。</p>
+    <p>建议先启动<b>90天“能量与控制力唤醒方案”</b>：前2周调作息+入门训练；中期练控制；后期做稳态巩固。我全程做您的专属教练，方法透明、过程可控。</p>
+    <p><b>现在就先把第一阶段开起来</b>，本周即可进入节律。我出执行表，您看今天安排上可以吗？</p>
+  `;
+
+  // 路径
+  document.getElementById('ph1').innerHTML = `
+    <div class="tag mid">阶段一 · 破冰（第1-2周）</div>
+    <ul>
+      <li><b>节律：</b>固定就寝/起床点；晨间光照+补水≥300ml。</li>
+      <li><b>训练：</b>呼吸+核心张力（5-8分钟/日）。</li>
+      <li><b>食养：</b>黄精淫羊藿/玛咖西洋参（定位：活力与意愿环境<small>支持</small>）。</li>
+    </ul>`;
+  document.getElementById('ph2').innerHTML = `
+    <div class="tag mid">阶段二 · 重构（第3-6周）</div>
+    <ul>
+      <li><b>控制：</b>分段式节律与注意力锚定（10分钟/日）。</li>
+      <li><b>养护：</b>修复按摩膏/博金油（定位：硬件保养+通路顺畅）。</li>
+      <li><b>复盘：</b>每周一次行为记录与节律优化。</li>
+    </ul>`;
+  document.getElementById('ph3').innerHTML = `
+    <div class="tag mid">阶段三 · 不朽（第7-12周）</div>
+    <ul>
+      <li><b>稳态：</b>巩固控制力与恢复曲线，形成“低强度、可持续”的长期惯性。</li>
+      <li><b>情绪：</b>高压日应对清单，减少波动。</li>
+      <li><b>辅助：</b>控时喷剂（初期从容“副刹车”）；焕能凝露（私密清洁与品质体验）。</li>
+    </ul>`;
+  document.getElementById('bundle').innerHTML = `
+    <div class="tag mid">建议携带包（合规表达）</div>
+    <ul>
+      <li><b>课程/训练：</b>节律与控制SOP（打卡）。</li>
+      <li><b>食养支持：</b>黄精淫羊藿、玛咖西洋参。</li>
+      <li><b>外用养护：</b>修复按摩膏、博金油。</li>
+      <li><b>智能辅助：</b>控时喷剂、焕能凝露。</li>
+    </ul>
+    <small>以上为健康管理建议，非医疗结论；请结合体感与执行力动态调整。</small>`;
+
+  // 雷达
+  drawRadar([s.energy,s.stability,s.control,s.recovery]);
+
+  // CTA
+  document.getElementById('startBtn').onclick = ()=>alert("已为该客户生成《90天能量与控制力唤醒方案》执行清单（示例）。实际跟进请在企业微信/飞书创建专属打卡与周复盘。");
+}
+
+/* ======================
+   4) 雷达图（Canvas）
+   ====================== */
+function drawRadar(vals){
+  const cvs = document.getElementById('radar');
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  const w = cvs.clientWidth, h = cvs.clientHeight;
+  cvs.width = w*dpr; cvs.height = h*dpr;
+  const ctx = cvs.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,h);
+  const cx = w/2, cy = h/2+6, R = Math.min(w,h)*0.36;
+  const axes = ["能量","稳定","控制","恢复"];
+  // 网格
+  for(let r=1;r<=4;r++){
+    ctx.beginPath(); ctx.strokeStyle=`rgba(255,255,255,${.06+r*0.03})`; ctx.lineWidth=1;
+    for(let i=0;i<axes.length;i++){
+      const ang = -Math.PI/2 + i*2*Math.PI/axes.length;
+      const x = cx + Math.cos(ang)*R*r/4, y = cy + Math.sin(ang)*R*r/4;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    } ctx.closePath(); ctx.stroke();
+  }
+  // 轴 & 标签
+  ctx.fillStyle="rgba(255,255,255,.76)"; ctx.font="12px system-ui";
+  axes.forEach((lab,i)=>{
+    const ang = -Math.PI/2 + i*2*Math.PI/axes.length;
+    const x = cx + Math.cos(ang)*R*1.06, y = cy + Math.sin(ang)*R*1.06;
+    ctx.fillText(lab, x-12, y+4);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx + Math.cos(ang)*R, cy + Math.sin(ang)*R);
+    ctx.strokeStyle="rgba(255,255,255,.06)"; ctx.stroke();
+  });
+  // 面
+  ctx.beginPath();
+  vals.forEach((v,i)=>{
+    const ang = -Math.PI/2 + i*2*Math.PI/axes.length;
+    const x = cx + Math.cos(ang)*R*v, y = cy + Math.sin(ang)*R*v;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,"rgba(61,214,208,.45)"); grad.addColorStop(1,"rgba(138,92,255,.45)");
+  ctx.fillStyle=grad; ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=1.2;
+  ctx.fill(); ctx.stroke();
+  // 点
+  vals.forEach((v,i)=>{
+    const ang = -Math.PI/2 + i*2*Math.PI/axes.length;
+    const x = cx + Math.cos(ang)*R*v, y = cy + Math.sin(ang)*R*v;
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
+  });
+}
+
+/* ======================
+   5) 星空（低配降级）
+   ====================== */
+(function starfield(){
+  const cvs = document.getElementById('bg'); const ctx = cvs.getContext('2d');
+  let w,h, dpr = Math.min(2, window.devicePixelRatio||1);
+  let stars = [], paused = false;
+
+  const smallScreen = Math.min(innerWidth, innerHeight) < 420;
+  const baseCount = smallScreen ? 80 : 160;         // 手机减少粒子
+  const fps = smallScreen ? 40 : 55;                // 降低刷新率
+  let last = 0;
+
+  function resize(){
+    w = cvs.width = innerWidth*dpr; h = cvs.height = innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function init(){
+    resize(); stars = [];
+    for(let i=0;i<baseCount;i++){
+      stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,z:Math.random()*1.2+0.2,a:Math.random()*2*Math.PI,s:Math.random()*0.7+0.3});
+    }
+  }
+  function tick(ts){
+    if(paused) return;
+    if(ts - last < 1000/fps){ requestAnimationFrame(tick); return; }
+    last = ts;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const s of stars){
+      s.x += Math.cos(s.a)*0.02*s.z; s.y += Math.sin(s.a)*0.02*s.z;
+      if(s.x<0) s.x=innerWidth; if(s.x>innerWidth) s.x=0;
+      if(s.y<0) s.y=innerHeight; if(s.y>innerHeight) s.y=0;
+      ctx.fillStyle=`rgba(140,200,255,${0.18+0.5*s.z})`;
+      ctx.fillRect(s.x, s.y, 1.0+1.2*s.s, 1.0+1.2*s.s);
+    }
+    requestAnimationFrame(tick);
+  }
+  addEventListener('resize', init, {passive:true});
+  addEventListener('visibilitychange', ()=>{paused = document.hidden; if(!paused) requestAnimationFrame(tick);});
+  init(); requestAnimationFrame(tick);
+})();
+
+/* ======================
+   6) 编辑器
+   ====================== */
+const editor = document.getElementById('editor');
+const jsonArea = document.getElementById('jsonArea');
+document.getElementById('editBtn').onclick = ()=>{
+  editor.style.display='block'; jsonArea.value = JSON.stringify(data,null,2);
+};
+function applyJSON(){
+  try{ data = JSON.parse(jsonArea.value); render(); editor.style.display='none'; }
+  catch(e){ alert("JSON 解析失败，请检查格式。"); }
+}
+function demoFill(){
+  jsonArea.value = JSON.stringify({client:{name:"李先生",age:42,occupation:"制造业负责人",answers:{
+    erectionHardness:"插入或不够坚硬",maintainAbility:"偶尔可以",timeToEjac:"1分钟以内",fatigue:"经常",
+    libidoChange:"几乎没有",performanceChange:"几乎没有",anxiety:"从不或很少",interestInSex:"几乎没有",
+    thinkNormalAging:"比较认同",lifestylePoor:"偶尔",relationshipImpact:"没有影响"}}},null,2);
+}
+
+/* 初始渲染 */
+render();
+</script>
+</body>
+</html>
